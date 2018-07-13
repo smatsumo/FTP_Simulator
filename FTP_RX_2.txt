@@ -1,0 +1,4 @@
+Line #1: This is a test for network simulator FTP protocol.
+Line #2: This is the second line of the test FTP file.
+Line #3: This is a test for network simulator FTP protocol.
+Line #4: This is the forth line of the test FTP file.

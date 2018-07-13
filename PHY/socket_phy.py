@@ -1,0 +1,90 @@
+import socket, time, sys
+from Queue import *
+import threading
+
+
+
+from global_var import debug_refresh,debug_flag_PHY,thread_sleep_period
+
+class SPHY:
+  
+  def __init__(self,ID,mac,ip,tx_port,rx_port):
+    
+    self.medium_ID = ID
+    self.mac = mac
+    self.ip = ip
+    self.tx_port = tx_port
+    self.rx_port = rx_port
+    self.tx_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    self.rx_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    self.rx_socket.bind((self.ip,self.rx_port))
+    
+    self.tx_buffer = Queue()
+    self.rx_buffer = Queue()
+    self.run()
+    
+    
+  
+  def transmitter(self):
+    
+    counter = 0
+    while True:
+      
+      if not self.tx_buffer.empty():
+	frame = self.tx_buffer.get()
+	#print len(frame)
+	self.tx_socket.sendto(frame, (self.ip, self.tx_port))
+	sys.stderr.write('+')
+      else:
+	time.sleep(thread_sleep_period)
+	counter +=thread_sleep_period
+	### debug
+	#if debug_flag_PHY and counter % debug_refresh:
+	#sys.stderr.write('.')
+
+	
+	
+  def send(self,frame):
+    self.tx_buffer.put(frame)
+  
+  def receive(self):
+    return self.rx_buffer.get()
+  
+  def has_data(self):
+    return not self.rx_buffer.empty()
+  
+  
+  def receiver(self):
+    
+    while True:
+      data, addr = self.rx_socket.recvfrom(1024)
+      #print data
+      self.rx_buffer.put(data)
+      
+      
+    
+  def run(self):
+    threading.Thread(target=self.transmitter).start()
+    threading.Thread(target=self.receiver).start()
+    
+      
+
+    
+    
+    
+  
+    #sock=socket.socket(...)
+    #sock.bind((host,port))
+    #sock.settimeout(5)
+    #try:
+    #while True:
+    #packet,address=socket.recvfrom()
+    #print packet
+    #except socket.timeout:
+    #print "socket timed out"
+    #finally:
+    #socket.close()
+    
+    
+    # alternative abortion 
+    #socket.shutdown(socket.SHUT_WR)
